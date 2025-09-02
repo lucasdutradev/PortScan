@@ -2,7 +2,7 @@ import socket
 import sys
 import threading
 from time import perf_counter
-from queue import Queue
+from queue import Queue,Empty
 import signal
 from cli import parse_args
 
@@ -11,19 +11,14 @@ lock = threading.Lock()
 host = "127.0.0.1"
 portRange = range(1, 1025)
 timeout = 0.5
-port_queue = Queue()
 stop_evt = threading.Event()
-
-open_ports = []
 
 def on_sigint(signum, frame):
   stop_evt.set()
-  for _ in range(qtThread):
-    port_queue.put(None)
 
 def crawl(host, timeout):
   while True:
-    currentPort = port_queue.get()
+    currentPort = port_queue.get(timeout=0.1)
     if currentPort is None:
       port_queue.task_done()
       break
@@ -39,16 +34,22 @@ def crawl(host, timeout):
         port_queue.task_done()
 
 def start_scan(host, portRange, timeout, qtThre):
+  global qtThread, port_queue, open_ports
+  port_queue = Queue()
+  open_ports = []
   threads = []
   threads.clear()
   start_time = perf_counter()
-  global qtThread
   qtThread = qtThre
 
   signal.signal(signal.SIGINT, on_sigint)
 
+
   for port in range(portRange[0], portRange[1]):
     port_queue.put(port)
+
+  for _ in range(qtThread):
+    port_queue.put(None)
 
   for _ in range(qtThread):
     t = threading.Thread(target=crawl, args=(host, timeout))
