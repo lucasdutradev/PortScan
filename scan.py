@@ -4,6 +4,7 @@ import threading
 from time import perf_counter
 from queue import Queue
 import signal
+from cli import parse_args
 
 lock = threading.Lock()
 
@@ -37,19 +38,16 @@ def crawl(host, timeout):
         sock.close()
         port_queue.task_done()
 
-def main(args):
+def start_scan(host, portRange, timeout, qtThre):
   threads = []
   threads.clear()
   start_time = perf_counter()
-  host = args[0]
-  portRange = range(int(args[1]), int(args[2]))
-  timeout = float(args[3])
   global qtThread
-  qtThread = int(args[4])
+  qtThread = qtThre
 
   signal.signal(signal.SIGINT, on_sigint)
 
-  for port in portRange:
+  for port in range(portRange[0], portRange[1]):
     port_queue.put(port)
 
   for _ in range(qtThread):
@@ -69,8 +67,10 @@ def main(args):
   print(f"--- {(perf_counter() - start_time)*1000:.2f} ms ---")
 
 
-try:
-  main([sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]])
-except(KeyboardInterrupt):
-  print("Finalizando programa...")
-  sys.exit()
+if __name__ == "__main__":
+    args = parse_args(sys.argv[1:])
+    try:
+      start_scan(args.host, args.ports, args.timeout, args.threads)
+    except(KeyboardInterrupt):
+      print("close program...")
+      sys.exit()
