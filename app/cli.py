@@ -24,9 +24,9 @@ def host_type(val: str) -> str:
     ipaddress.ip_address(val)
     return val
   except ValueError:
-    if val.startswith(["http://", "https://"]):
+    if val.startswith(("http://", "https://")):
       return val
-    raise argparse.ArgumentTypeError("should be literal ip or hostname")
+    raise argparse.ArgumentTypeError("should be literal valid ip or hostname")
 
 def build_parser() -> argparse.ArgumentParser:
   parse = argparse.ArgumentParser(
