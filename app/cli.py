@@ -1,13 +1,19 @@
 import argparse
 import ipaddress
 
-def positive_int(val: str) -> int:
+def positive_int(val: str | int) -> int:
+  if isinstance(val, str) and not val.isnumeric():
+        raise argparse.ArgumentTypeError("should be numeric")
+
   number = int(val)
   if number <= 0:
     raise argparse.ArgumentTypeError("should be > 0")
+
   return number
 
-def port_int(val: str) -> int:
+def port_int(val: str | int) -> int:
+  if isinstance(val, str) and not val.isnumeric():
+      raise argparse.ArgumentTypeError("should be numeric")
   port = int(val)
   if not 1 <= port <= 65535:
     raise argparse.ArgumentTypeError("should be between 1... 65535")
@@ -18,9 +24,9 @@ def host_type(val: str) -> str:
     ipaddress.ip_address(val)
     return val
   except ValueError:
-    if val.startswith(["http://", "https://"]):
+    if val.startswith(("http://", "https://")):
       return val
-    raise argparse.ArgumentTypeError("should be literal ip or hostname")
+    raise argparse.ArgumentTypeError("should be literal valid ip or hostname")
 
 def build_parser() -> argparse.ArgumentParser:
   parse = argparse.ArgumentParser(

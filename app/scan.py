@@ -2,9 +2,9 @@ import socket
 import sys
 import threading
 from time import perf_counter
-from queue import Queue,Empty
+from queue import Queue
 import signal
-from cli import parse_args
+from .cli import parse_args
 
 lock = threading.Lock()
 
